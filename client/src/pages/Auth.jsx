@@ -24,47 +24,45 @@ export function Login() {
   const toast = useToast();
   const [form, setForm] = useState({ email: "", password: "" });
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   const submit = async (e) => {
     e.preventDefault();
     setBusy(true);
+    setError("");
     try {
       const user = await login(form.email, form.password);
       toast(`Welcome back, ${user.name.split(" ")[0]}!`);
       nav(dashFor(user.role));
     } catch (err) {
-      toast(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || "Invalid email or password");
     } finally {
       setBusy(false);
     }
   };
 
-  const fill = (email) => setForm({ email, password: email.includes("admin") ? "admin123" : email.includes("provider") ? "provider123" : "parent123" });
-
   return (
     <Shell title="Welcome back" sub="Log in to manage your childcare.">
       <form onSubmit={submit}>
+        {error && (
+          <div style={{ background:"var(--red-bg)", color:"var(--red)", padding:"12px 16px", borderRadius:10, marginBottom:16, fontSize:"0.9rem", fontWeight:700 }}>
+            ⚠️ {error}
+          </div>
+        )}
         <div className="field">
           <label>Email</label>
-          <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+          <input type="email" value={form.email} placeholder="your@email.com"
+            onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         </div>
         <div className="field">
           <label>Password</label>
-          <input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <input type="password" value={form.password} placeholder="Your password"
+            onChange={(e) => setForm({ ...form, password: e.target.value })} required />
         </div>
         <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} disabled={busy}>
-          {busy ? "Logging in…" : "Log in"}
+          {busy ? "Logging in…" : "Log in →"}
         </button>
       </form>
-
-      <div style={{ marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--line)" }}>
-        <p className="muted" style={{ fontSize: "0.8rem", fontWeight: 700, marginBottom: 8 }}>Quick demo logins:</p>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {[["Parent", "parent@littlesteps.com"], ["Provider", "provider@littlesteps.com"], ["Admin", "admin@littlesteps.com"]].map(([l, e]) => (
-            <button key={l} type="button" className="btn btn-ghost btn-sm" onClick={() => fill(e)}>{l}</button>
-          ))}
-        </div>
-      </div>
       <p className="muted" style={{ marginTop: 18, fontSize: "0.9rem" }}>
         New here? <Link to="/register" style={{ color: "var(--coral-dark)", fontWeight: 700 }}>Create an account</Link>
       </p>
@@ -78,10 +76,12 @@ export function Register() {
   const toast = useToast();
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "", city: "", role: "parent" });
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
 
   const submit = async (e) => {
     e.preventDefault();
     setBusy(true);
+    setError("");
     try {
       const user = await register(form);
       if (user.role === "provider" && user.status === "pending") {
@@ -91,7 +91,7 @@ export function Register() {
       }
       nav(dashFor(user.role));
     } catch (err) {
-      toast(err.response?.data?.message || "Registration failed");
+      setError(err.response?.data?.message || "Registration failed. Try again.");
     } finally {
       setBusy(false);
     }
@@ -102,6 +102,11 @@ export function Register() {
   return (
     <Shell title="Create your account" sub="Join as a parent or list your center.">
       <form onSubmit={submit}>
+        {error && (
+          <div style={{ background:"var(--red-bg)", color:"var(--red)", padding:"12px 16px", borderRadius:10, marginBottom:16, fontSize:"0.9rem", fontWeight:700 }}>
+            ⚠️ {error}
+          </div>
+        )}
         <div className="field">
           <label>I am a…</label>
           <select value={form.role} onChange={set("role")}>
@@ -111,28 +116,28 @@ export function Register() {
         </div>
         <div className="field">
           <label>Full name</label>
-          <input value={form.name} onChange={set("name")} required />
+          <input value={form.name} onChange={set("name")} placeholder="Your full name" required />
         </div>
         <div className="field">
           <label>Email</label>
-          <input type="email" value={form.email} onChange={set("email")} required />
+          <input type="email" value={form.email} onChange={set("email")} placeholder="your@email.com" required />
         </div>
         <div className="row">
           <div className="field">
             <label>Phone</label>
-            <input value={form.phone} onChange={set("phone")} />
+            <input value={form.phone} onChange={set("phone")} placeholder="10-digit number" />
           </div>
           <div className="field">
             <label>City</label>
-            <input value={form.city} onChange={set("city")} />
+            <input value={form.city} onChange={set("city")} placeholder="e.g. Bengaluru" />
           </div>
         </div>
         <div className="field">
           <label>Password</label>
-          <input type="password" value={form.password} onChange={set("password")} required minLength={6} />
+          <input type="password" value={form.password} onChange={set("password")} placeholder="Min. 6 characters" required minLength={6} />
         </div>
         <button className="btn btn-primary" style={{ width: "100%", justifyContent: "center" }} disabled={busy}>
-          {busy ? "Creating…" : "Create account"}
+          {busy ? "Creating…" : "Create account →"}
         </button>
       </form>
       <p className="muted" style={{ marginTop: 18, fontSize: "0.9rem" }}>
